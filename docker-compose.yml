@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  log_ingestion:
+    build: ./log_ingestion
+    container_name: log_ingestion
+    ports:
+      - "8003:8003"
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - cce_network
+
+  semantic_interpreter:
+    build: ./semantic_interpreter
+    container_name: semantic_interpreter
+    ports:
+      - "8004:8004"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    env_file:
+      - .env
+    networks:
+      - cce_network
+
+  intent_classifier:
+    build: ./intent_classifier
+    container_name: intent_classifier
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - INTENT_RULE_CONFIDENCE_THRESHOLD=${INTENT_RULE_CONFIDENCE_THRESHOLD}
+      - INTENT_LLM_FALLBACK_ENABLED=${INTENT_LLM_FALLBACK_ENABLED}
+    env_file:
+      - .env
+    networks:
+      - cce_network
+
+  mitre_reasoner:
+    build: ./mitre_reasoner
+    container_name: mitre_reasoner
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    networks:
+      - cce_network
+    volumes:
+      # Persist chroma db if needed, or just mount it
+      - ./mitre_reasoner/chroma_db:/app/chroma_db
+
+  orchestrator:
+    build: ./orchestrator
+    container_name: orchestrator
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_INGEST_URL=http://log_ingestion:8003
+      - SEMANTIC_URL=http://semantic_interpreter:8004
+      - INTENT_URL=http://intent_classifier:8002
+      - MITRE_URL=http://mitre_reasoner:8001
+      - ORCHESTRATOR_TIMEOUT=${ORCHESTRATOR_TIMEOUT}
+      - ORCHESTRATOR_LOG_LEVEL=${ORCHESTRATOR_LOG_LEVEL}
+    networks:
+      - cce_network
+    depends_on:
+      - log_ingestion
+      - semantic_interpreter
+      - intent_classifier
+      - mitre_reasoner
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    networks:
+      - cce_network
+    depends_on:
+      - orchestrator
+
+networks:
+  cce_network:
+    driver: bridge
