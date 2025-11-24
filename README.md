@@ -1,5 +1,7 @@
 # Cognitive Context Enrichment (CCE) Pipeline
 
+![diagram](./diagram.png)
+
 **CCE** is an AI-powered microservices architecture designed to modernize Security Operations Center (SOC) workflows. It acts as an intelligent enrichment layer that sits on top of traditional SIEMs, transforming raw, noisy logs into actionable, context-rich security alerts.
 
 Unlike standard rule-based detection, CCE leverages a hybrid approach combining deterministic logic (Sigma rules) with probabilistic AI (LLMs & Vector Embeddings) to understand the *intent* behind an event, map it to the MITRE ATT&CK framework, and calculate a dynamic risk score.
