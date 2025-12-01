@@ -87,6 +87,10 @@ The system is built as a set of Dockerized Python FastAPI microservices, orchest
 
 ## 📖 How It Works
 
+<video controls width="600">
+   <source src="./demo.mp4" type="video/mp4">
+</video>
+
 1.  **Submission:** An analyst submits a raw log (e.g., a suspicious PowerShell command) via the Frontend or API.
 2.  **Ingestion:** The `log_ingestion` service identifies the format (e.g., Windows Event Log) and parses it into a structured JSON object.
 3.  **Interpretation:** The `semantic_interpreter` analyzes the text to understand *what* is happening (e.g., "A process is attempting to execute a hidden command").
